@@ -7,7 +7,30 @@ void MakePlots() {
 	if (!savePDF && !savePNG) { savePNG = true; } // at least we save png file
 	if (!drawHistogram && !drawProfiles) { drawHistogram = true; } // at least we draw histograms
 
-	gStyle->SetTitleOffset(0.1, "Y");
+	gStyle->SetLabelSize(0.05, "xyz");
+	gStyle->SetLabelFont(62, "xyz");
+
+	gStyle->SetTickLength(0.03, "xyz");
+	gStyle->SetNdivisions(505, "xyz");
+
+	gStyle->SetTitleSize(0.05, "xyz");
+	gStyle->SetTitleFont(62, "xyz");
+	gStyle->SetTitleOffset(1.2, "xyz");
+
+	gStyle->SetFrameLineWidth(2);
+	gStyle->SetHistLineWidth(2);
+	gStyle->SetFuncWidth(2);
+
+	gStyle->SetCanvasBorderMode(1);
+	gStyle->SetFrameBorderMode(1);
+	gStyle->SetPadBorderMode(1);
+
+	gStyle->SetPadTopMargin(0.10);
+	gStyle->SetPadBottomMargin(0.14);
+	gStyle->SetPadLeftMargin(0.14);
+	gStyle->SetPadRightMargin(0.04);
+
+	gStyle->SetOptStat(0);
 
 	TCanvas* const c1 = new TCanvas("c1", "", 1);
 	c1->SetLogy();
@@ -21,12 +44,16 @@ void MakePlots() {
 		const TKey* const key = (TKey*)keyObject;
 		if (TString(key->GetClassName()).BeginsWith("TH1")) {
 			c1->cd();
+			gPad->SetLogy(0);
 			TH1* const histogram = (TH1*)fIn->Get(key->GetName());
 			histogram->UseCurrentStyle();
 			histogram->Draw();
 			const TString name = histogram->GetName();
 			if (savePDF) { c1->SaveAs("fig/"+name+".pdf"); }
 			if (savePNG) { c1->SaveAs("fig/"+name+".png"); }
+			gPad->SetLogy(1);
+			if (savePDF) { c1->SaveAs("fig/logy"+name+".pdf"); }
+			if (savePNG) { c1->SaveAs("fig/logy"+name+".png"); }
 		} else if (TString(key->GetClassName()).BeginsWith("TH2")) {
 			c2->cd();
 			TH2* const histogram = (TH2*)fIn->Get(key->GetName());
