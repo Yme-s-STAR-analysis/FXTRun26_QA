@@ -2,54 +2,29 @@
 #define __YQAMAKER__
 
 #include <iostream>
+#include <vector>
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TProfile.h"
 #include "TString.h"
 
-/*
-
-    Define some detector macros here
-
-*/
-
-#define __WITH_EPD__ 
-
-#define __WITH_ETOF__ 
-
-
 #include "StChain/StMaker.h"
-
 #include "StPicoDstMaker/StPicoDstMaker.h"
 #include "StPicoEvent/StPicoDst.h"
 #include "StPicoEvent/StPicoEvent.h"
 #include "StPicoEvent/StPicoTrack.h"
-
-// always use bTOF
 #include "StPicoEvent/StPicoBTofPidTraits.h"
+#include "StEpdUtil/StEpdGeom.h"
+#include "StPicoEvent/StPicoEpdHit.h"
+#include "StPicoEvent/StPicoETofPidTraits.h"
 
-#ifdef __WITH_EPD__
-    #include "StEpdUtil/StEpdGeom.h"
-    #include "StPicoEvent/StPicoEpdHit.h"
-#endif
+#include "StRoot/StFxtMult/StFxtMult.h"
 
-#ifdef __WITH_ETOF__
-    #include "StPicoEvent/StPicoETofPidTraits.h"
-#endif
-
-class StPicoDst;
-class StPicoTrack;
-class StPicoEvent;
-class StPicoDstMaker;
 class TH1D;
 class TH1F;
 class TH2F;
 class TProfile;
-class StPicoBTofPidTraits;
-class StEpdGeom;
-class StPicoEpdHit;
-class StPicoETofPidTraits;
 
 class StYQAMaker : public StMaker {
     public:
@@ -63,15 +38,9 @@ class StYQAMaker : public StMaker {
         Int_t MakeTrack(const Int_t iTrack);
         Bool_t IsGoodTrigger();
 
+        Int_t MakeEpdHits(const Int_t iHit);
         Double_t GetBTofBeta();
-
-        #ifdef __WITH_EPD__
-            Int_t MakeEpdHits(const Int_t iHit);
-        #endif
-
-        #ifdef __WITH_ETOF__
-            Double_t GetETofBeta();
-        #endif
+        Double_t GetETofBeta();
 
     private:
 
@@ -82,16 +51,12 @@ class StYQAMaker : public StMaker {
         StPicoEvent* mPicoEvent;
         StPicoTrack* mPicoTrack;
 
+        StEpdGeom* mEpdGeom;
+        StPicoEpdHit* mEpdHit;
         StPicoBTofPidTraits* mBTofPidTraits;
+        StPicoETofPidTraits* mETofPidTraits;
 
-        #ifdef __WITH_EPD__
-	        StEpdGeom* mEpdGeom;
-            StPicoEpdHit* mEpdHit;
-        #endif
-
-        #ifdef __WITH_ETOF__
-            StPicoETofPidTraits* mETofPidTraits;
-        #endif
+        StFxtMult* mtMult;
         
         Int_t mRunId;
         Int_t mRefMult;
@@ -99,15 +64,22 @@ class StYQAMaker : public StMaker {
         Double_t mBField;
         Double_t vx, vy, vz;
 
-        #ifdef __WITH_EPD__
-            Int_t mNEpdHitsEast;
-            Int_t mNEpdHitsWest;
-        #endif
+        Int_t mNEpdHitsEast;
+        Int_t mNEpdHitsWest;
+        
+        // those track-wise quantities will be collected for each event
+        // and calculate their mean (also sigma for some of them) to fill TProfiles
+        std::vector<Double_t> vpt;
+        std::vector<Double_t> veta;
+        std::vector<Double_t> vphi;
+        std::vector<Double_t> vsdca;
+        std::vector<Double_t> vnhitsdedx;
+        std::vector<Double_t> vnhitsfit;
+        std::vector<Double_t> vsdcaxy;
+        std::vector<Double_t> vsdcaz;
         
         // Histograms
-
         // Event-wise
-
         TH1D* hNev;
         TH2F* h2VxVy;
         TH2F* h2VxVyVrCut;
@@ -122,21 +94,32 @@ class StYQAMaker : public StMaker {
         TH1F* hRefMult;
         TH1F* hRefMult3;
 
+        // Multiplicities from StFxtMult
+        TH1F* hFXTMult_DCA1;
+        TH1F* hFXTMult_DCA3;
+        TH1F* hFXTMult3_DCA1;
+        TH1F* hFXTMult3_DCA3;
+        TH1F* hTofMult;
+        TH1F* hTofMult3;
+        TH1F* hTofMatch;
+        TH1F* hBTofMatch;
+        TH1F* hEpdTnMip;
+        // pile-up
+        TH2F* h2FXTMult3DCA11FXTMult3DCA3;
+        TH2F* h2FXTMult3DCA1TofMult3;
+        TH2F* h2FXTMult3DCA1EpdTnMip;
+        
+        // mean DCAxyz
+        TH2F* h2FXTMultDCA3sDCAxy;
+        TH2F* h2FXTMultDCA3sDCAz;
+
         TH1F* hNBTofHits;
-        TH1F* hNBTofMatch;
-
-        #ifdef __WITH_EPD__
-            TH1F* hNEpdHitsEast;
-            TH1F* hNEpdHitsWest;
-        #endif
-
-        #ifdef __WITH_ETOF__
-            TH1F* hNETofDigis;
-            TH1F* hNETofHits;
-        #endif
+        TH1F* hNEpdHitsEast;
+        TH1F* hNEpdHitsWest;
+        TH1F* hNETofDigis;
+        TH1F* hNETofHits;
 
         // Track-wise
-
         TH1F* hNHitsFit;
         TH1F* hNHitsFitRatioCut;
         TH1F* hNHitsDedx;
@@ -157,71 +140,61 @@ class StYQAMaker : public StMaker {
         TH2F* h2BTofMass2VsNSigmaProton;
         TH2F* h2ProtonPtY;
         TH2F* h2ProtonPtYbTOF;
-        
-        #ifdef __WITH_EPD__
-            TH1F* hNEpdMipEast;
-            TH1F* hNEpdMipWest;
-        #endif
 
-        #ifdef __WITH_ETOF__
-            TH2F* h2RigiVsETof1OverBeta;
-            TH2F* h2RigiVsETofMass2;
-            TH2F* h2ETofMass2VsNSigmaProton;
-            TH2F* h2ProtonPtYeTOF;
-        #endif
+        TH2F* h2EtaNHitsFit;
+        TH2F* h2EtaNHitsDedx;
+        TH2F* h2EtaNHitsRatio;
+        TH2F* h2PhiNHitsFit;
+        TH2F* h2PhiNHitsDedx;
+        TH2F* h2PhiNHitsRatio;
+        
+        TH1F* hNEpdMipEast;
+        TH1F* hNEpdMipWest;
+        TH1F* hNEpdTMipEast;
+        TH1F* hNEpdTMipWest;
+    
+        TH2F* h2RigiVsETof1OverBeta;
+        TH2F* h2RigiVsETofMass2;
+        TH2F* h2ETofMass2VsNSigmaProton;
+        TH2F* h2ProtonPtYeTOF;
 
         // Profiles
-
         // Event-wise
-
-        TProfile* pRunVsVx;
-        TProfile* pRunVsVy;
         TProfile* pRunVsVz;
         TProfile* pRunVsVr;
-        TProfile* pRunVsBbcX;
-        TProfile* pRunVsZdcX;
-        TProfile* pRunvsNBTofHits;
-        TProfile* pRunvsNBTofMatch;
 
         TProfile* pRunVsRefMult;
         TProfile* pRunVsRefMult3;
         
-        #ifdef __WITH_EPD__
-            TProfile* pRunVsNEpdHitsEast;
-            TProfile* pRunVsNEpdHitsWest;
-        #endif
+        TProfile* pRunVsNEpdHitsEast;
+        TProfile* pRunVsNEpdHitsWest;
 
-        #ifdef __WITH_ETOF__
-            TProfile* pRunvsNETofHits;
-            TProfile* pRunvsNETofDigi;
-        #endif
+        TProfile* pRunvsNETofHits;
+        TProfile* pRunvsNETofDigi;
 
+        TProfile* pRunVsFXTMult_DCA1;
+        TProfile* pRunVsFXTMult_DCA3;
+        TProfile* pRunVsFXTMult3_DCA1;
+        TProfile* pRunVsFXTMult3_DCA3;
+        TProfile* pRunVsTofMult;
+        TProfile* pRunVsTofMult3;
+        TProfile* pRunVsEpdTnMip;
+        TProfile* pRunVsTofMatch; // this one includes both btof and etof
+        TProfile* pRunVsBTofMatch; // this one comes from bTof
+        
         // Track-wise
-
-        TProfile* pRunVsNHitsFit;
-        TProfile* pRunVsNHitsRatio;
-        TProfile* pRunVsNHitsDedx;
         TProfile* pRunVsDca;
         TProfile* pRunVsDcaZ;
         TProfile* pRunVssDcaXY;
+        TProfile* pRunVsDcaZStd;
+        TProfile* pRunVssDcaXYStd;
+        TProfile* pRunVsNHitsFit;
+        TProfile* pRunVsNHitsDedx;
         TProfile* pRunVsPt;
         TProfile* pRunVsEta;
         TProfile* pRunVsPhi;
-        TProfile* pRunVsBTof1OverBeta;
-        
-        #ifdef __WITH_EPD__
-            TProfile* pRunVsNMipEast;
-            TProfile* pRunVsNMipWest;
-            TProfile* pRunVsTNMipEast;
-            TProfile* pRunVsTNMipWest;
-        #endif
-
-        #ifdef __WITH_ETOF__
-            TProfile* pRunVsETof1OverBeta;
-        #endif
 
         ClassDef(StYQAMaker,1)
 };
 
 #endif
-
