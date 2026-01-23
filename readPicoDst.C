@@ -27,6 +27,8 @@ void readPicoDst(const TString inputFile = "file.list",
 	gSystem->Load("StETofUtil");
 	gSystem->Load("StEpdUtil");
 
+	gSystem->Load("TpcShiftTool");
+	gSystem->Load("StFxtMult");
 	gSystem->Load("StYQAMaker");
 
 	chain = new StChain();
