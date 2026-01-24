@@ -260,7 +260,7 @@ Int_t StYQAMaker::Init() {
     );
     hBTofMatch = new TH1F(
         "hBTofMatch", "bTOF Match;n bTofMatches;Counts", 
-        600, -0.5, 599.5
+        200, -0.5, 199.5
     );
     hEpdTnMip = new TH1F(
         "hEpdTnMip", "EPD truncated nMIP;TnMIP;Counts", 
@@ -290,12 +290,12 @@ Int_t StYQAMaker::Init() {
     h2FXTMultDCA3sDCAxy = new TH2F(
         "h2FXTMultDCA3sDCAxy", "FXTMult DCA3 v.s. sDCAxy;FXTMult DCA3;sDCAxy (cm);Counts", 
         280, -0.5, 279.5,
-        60, -3.0, 3.0
+        400, -2.0, 2.0
     );
     h2FXTMultDCA3sDCAz = new TH2F(
         "h2FXTMultDCA3sDCAz", "FXTMult DCA3 v.s. DCAz;FXTMult DCA3;DCAz (cm);Counts", 
         280, -0.5, 279.5,
-        60, -3.0, 3.0
+        400, -2.0, 2.0
     );
 
     hNEpdHitsEast = new TH1F(
