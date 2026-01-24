@@ -136,6 +136,12 @@ StYQAMaker::~StYQAMaker() {
     delete pRunVsPt; pRunVsPt = nullptr;
     delete pRunVsEta; pRunVsEta = nullptr;
     delete pRunVsPhi; pRunVsPhi = nullptr;
+
+    #ifdef __RBRDEDXRIGI__
+    for (auto& item : mapRBRh2RigiVsDedx) {
+        delete item.second; item.second = nullptr;
+    }
+    #endif
 }
 
 Int_t StYQAMaker::Init() {
@@ -511,6 +517,17 @@ Int_t StYQAMaker::Init() {
     pRunVsPt = new TProfile("pRunVsPt", ";Run ID;<p_{T}> (GeV/c)", nRuns, -0.5, nRuns-0.5);
     pRunVsEta = new TProfile("pRunVsEta", ";Run ID;<#eta>", nRuns, -0.5, nRuns-0.5);
     pRunVsPhi = new TProfile("pRunVsPhi", ";Run ID;<#phi>", nRuns, -0.5, nRuns-0.5);
+
+    #ifdef __RBRDEDXRIGI__
+    for (auto& runId : DbConf::mRunIdxMap) {
+        TH2F* h2Tmp = new TH2F(
+            Form("h2RigiVsDedx_%d", runId.first), Form("Rigidity v.s. dE/dx [%d];p/q (GeV/c);dE/dx (keV/cm);Counts", runId.first), 
+            250, -5.0, 5.0,
+            250, 0.0, 25.0
+        );
+        mapRBRh2RigiVsDedx[runId.second] = h2Tmp; // the key of this map is redcued ID
+    }
+    #endif
     
     std::cout << "[LOG] - From Init: " << "Initializing the StFxtMult tool!" << std::endl;
     mtMult = new StFxtMult();
@@ -641,6 +658,12 @@ Int_t StYQAMaker::Finish() {
     pRunVsPt->Write();
     pRunVsEta->Write();
     pRunVsPhi->Write();
+
+    #ifdef __RBRDEDXRIGI__
+    for (auto& item : mapRBRh2RigiVsDedx) {
+        item.second->Write();
+    }
+    #endif
 
     tfout->Close();
     std::cout << "[LOG] - From Finish: " << ".root file saved." << std::endl;
@@ -979,6 +1002,10 @@ Int_t StYQAMaker::MakeTrack(Int_t iTrack) {
     h2RigiVsNSigmaProton->Fill(rigi, nSigProton);
     h2RigiVsNSigmaPion->Fill(rigi, nSigPion);
     h2RigiVsNSigmaKaon->Fill(rigi, nSigKaon);
+
+    #ifdef __RBRDEDXRIGI__
+    mapRBRh2RigiVsDedx[mRunId]->Fill(rigi, mPicoTrack->dEdx());
+    #endif
 
     if (bTofBeta > 1e-5) {
         Double_t m2b = p*p * (pow(bTofBeta, -2.0) - 1);

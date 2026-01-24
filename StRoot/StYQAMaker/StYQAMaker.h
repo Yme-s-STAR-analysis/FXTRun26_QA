@@ -26,6 +26,9 @@ class TH1F;
 class TH2F;
 class TProfile;
 
+// if we would like to save run-by-run dE/dx plot
+// #define __RBRDEDXRIGI__
+
 class StYQAMaker : public StMaker {
     public:
         StYQAMaker(const char* name, StPicoDstMaker* picoMaker, const char* outName);
@@ -193,6 +196,11 @@ class StYQAMaker : public StMaker {
         TProfile* pRunVsPt;
         TProfile* pRunVsEta;
         TProfile* pRunVsPhi;
+
+        // run-by-run dE/dx vs rigidity
+        #ifdef __RBRDEDXRIGI__
+        map<int, TH2F*> mapRBRh2RigiVsDedx;
+        #endif
 
         ClassDef(StYQAMaker,1)
 };
