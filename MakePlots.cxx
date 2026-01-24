@@ -41,11 +41,11 @@ void MakePlots() {
 
 	gStyle->SetOptStat(0);
 
-	TCanvas* const c1 = new TCanvas("c1", "", 1);
+	TCanvas* const c1 = new TCanvas("c1", "", 0, 0, 800, 800);
 	c1->SetLogy();
-	TCanvas* const c2 = new TCanvas("c2", "", 1);
+	TCanvas* const c2 = new TCanvas("c2", "", 0, 0, 800, 800);
 	c2->SetLogz();
-	TCanvas* const c3 = new TCanvas("c3", "", 1);
+	TCanvas* const c3 = new TCanvas("c3", "", 0, 0, 800, 800);
 
 	TFile* const fIn = new TFile("QA.hadd.root");
 	const TList* const keyList = fIn->GetListOfKeys();
