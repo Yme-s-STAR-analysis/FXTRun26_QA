@@ -1,12 +1,14 @@
 # FXT Run 2026 QA - Fastoffline
 
-`version 1.3`
+`version 1.4`
 
 `author: yghuang`
 
 ## Usage
 
 1. Modify settings (trigger sets and run list) in `conf.py` and run `python3 MakeDbConf.py`.
+
+    * uncomment the definition of `__RBRDEDXRIGI__` in `StYQAMaker.h` is you want to store run-by-run dEdx plot.
 
 2. Using `./prepare.sh PATH FILELIST 1` to initialize and submit jobs.
 
@@ -19,6 +21,10 @@
 5. Run `BetterProfile.cxx` to make those profiles better formatted for official run-by-run QA package.
 
 ## Change log
+
+2026 Jan. 25 by yghuang 1.4:
+
+> Offer an option to store run-by-run dEdx plot.
 
 2026 Jan. 25 by yghuang 1.3:
 
