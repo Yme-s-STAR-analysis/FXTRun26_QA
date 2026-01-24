@@ -12,6 +12,8 @@ void MakePlots() {
 
 	gStyle->SetTickLength(0.03, "xyz");
 	gStyle->SetNdivisions(505, "xyz");
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
 
 	gStyle->SetTitleSize(0.05, "xyz");
 	gStyle->SetTitleFont(62, "xyz");
@@ -29,6 +31,13 @@ void MakePlots() {
 	gStyle->SetPadBottomMargin(0.14);
 	gStyle->SetPadLeftMargin(0.14);
 	gStyle->SetPadRightMargin(0.04);
+
+	gStyle->SetPadGridX(true);
+	gStyle->SetPadGridY(true);
+
+	gStyle->SetGridColor(kGray+1);
+	gStyle->SetGridStyle(3);
+	gStyle->SetGridWidth(1);
 
 	gStyle->SetOptStat(0);
 
