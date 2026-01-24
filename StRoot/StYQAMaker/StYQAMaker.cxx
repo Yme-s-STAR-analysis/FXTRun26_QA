@@ -234,7 +234,7 @@ Int_t StYQAMaker::Init() {
     );
     hFXTMult3_DCA1 = new TH1F(
         "hFXTMult3_DCA1", "FXT Mult3 DCA1;FXTMult3_DCA1;Counts", 
-        200, -0.5, 199.5
+        160, -0.5, 159.5 
     );
     hFXTMult3_DCA3 = new TH1F(
         "hFXTMult3_DCA3", "FXT Mult3 DCA3;FXTMult3_DCA3;Counts", 
@@ -246,11 +246,11 @@ Int_t StYQAMaker::Init() {
     );
     hTofMult3 = new TH1F(
         "hTofMult3", "TOF Mult3;TofMult3;Counts", 
-        600, -0.5, 599.5
+        60, -0.5, 59.5
     );
     hTofMatch = new TH1F(
         "hTofMatch", "TOF Match;n TofMatches;Counts", 
-        600, -0.5, 599.5
+        120, -0.5, 119.5
     );
     hBTofMatch = new TH1F(
         "hBTofMatch", "bTOF Match;n bTofMatches;Counts", 
@@ -264,32 +264,32 @@ Int_t StYQAMaker::Init() {
     // pile-up and mean-DCA related 2D histograms
     h2FXTMult3DCA11FXTMult3DCA3 = new TH2F(
         "h2FXTMult3DCA11FXTMult3DCA3", 
-        "FXTMult3_DCA1 vs _DCA3;FXTMult_DCA1;FXTMult_DCA3;Counts", 
-        200, -0.5, 199.5, 
+        "FXTMult3_DCA1 v.s. _DCA3;FXTMult3_DCA1;FXTMult_DCA3;Counts", 
+        160, -0.5, 159.5,
         250, -0.5, 249.5
     );
     h2FXTMult3DCA1TofMult3 = new TH2F(
         "h2FXTMult3DCA1TofMult3", 
-        "FXTMult3_DCA1 vs TofMult3;FXTMult_DCA1;TofMult3;Counts", 
-        200, -0.5, 199.5, 
-        200, -0.5, 199.5
+        "FXTMult3_DCA1 v.s. TofMult3;FXTMult3_DCA1;TofMult3;Counts", 
+        160, -0.5, 159.5,
+        60, -0.5, 59.5
     );
     h2FXTMult3DCA1EpdTnMip = new TH2F(
         "h2FXTMult3DCA1EpdTnMip", 
-        "FXTMult3_DCA1 vs EPD TnMIP;FXTMult_DCA1;TnMIP;Counts", 
-        200, -0.5, 199.5, 
+        "FXTMult3_DCA1 v.s. EPD TnMIP;FXTMult3_DCA1;TnMIP;Counts", 
+        160, -0.5, 159.5,
         650, -0.5, 649.5
     );
 
     h2FXTMultDCA3sDCAxy = new TH2F(
-        "h2FXTMultDCA3sDCAxy", "FXTMult DCA3 vs sDCAxy;FXTMult DCA3;sDCAxy (cm);Counts", 
+        "h2FXTMultDCA3sDCAxy", "FXTMult DCA3 v.s. sDCAxy;FXTMult DCA3;sDCAxy (cm);Counts", 
         280, -0.5, 279.5,
-        100, -5.0, 5.0
+        60, -3.0, 3.0
     );
     h2FXTMultDCA3sDCAz = new TH2F(
-        "h2FXTMultDCA3sDCAz", "FXTMult DCA3 vs DCAz;FXTMult DCA3;DCAz (cm);Counts", 
+        "h2FXTMultDCA3sDCAz", "FXTMult DCA3 v.s. DCAz;FXTMult DCA3;DCAz (cm);Counts", 
         280, -0.5, 279.5,
-        100, -5.0, 5.0
+        60, -3.0, 3.0
     );
 
     hNEpdHitsEast = new TH1F(
@@ -399,12 +399,12 @@ Int_t StYQAMaker::Init() {
 
     h2ProtonPtY = new TH2F(
         "h2ProtonPtY", "Proton Acceptance w/o TOF;y (proton);p_{T} (GeV/c);Counts", 
-        200, -1.8, 0.2, 
+        230, -1.8, 0.5, 
         200, 0.0, 4.0
     );
     h2ProtonPtYbTOF = new TH2F(
         "h2ProtonPtYbTOF", "Proton Acceptance w/ bTOF;y (proton);p_{T} (GeV/c);Counts", 
-        200, -1.8, 0.2, 
+        230, -1.8, 0.5, 
         200, 0.0, 4.0
     );
 
@@ -474,7 +474,7 @@ Int_t StYQAMaker::Init() {
     );
     h2ProtonPtYeTOF = new TH2F(
         "h2ProtonPtYeTOF", "Proton Acceptance w/ eTOF;y (proton);p_{T} (GeV/c);Counts", 
-        200, -1.8, 0.2, 
+        230, -1.8, 0.5, 
         200, 0.0, 4.0
     );
     
