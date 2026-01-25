@@ -41,10 +41,10 @@ void MakeAccPlot() {
 
 	gStyle->SetOptStat(0);
 
-    auto c = new TCanvas();
+    auto c = new TCanvas("", "", 0, 0, 800, 800);
     c->cd();
     gPad->SetLogz();
-    auto frame = (TH2F*)gPad->DrawFrame(-1.8, -0.1, 0.2, 2.5);
+    auto frame = (TH2F*)gPad->DrawFrame(-1.8, -0.1, 0.5, 2.5);
     frame->SetTitle("Run26 Au+Au 4.5 GeV;Proton Rapidity (y);p_{T} (GeV/c)");
     tpc->Draw("colsame");
     b->Draw("colsame");
