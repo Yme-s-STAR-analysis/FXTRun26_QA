@@ -1,6 +1,6 @@
 # FXT Run 2026 QA - Fastoffline
 
-`version 1.4`
+`version 1.5`
 
 `author: yghuang`
 
@@ -9,6 +9,8 @@
 1. Modify settings (trigger sets and run list) in `conf.py` and run `python3 MakeDbConf.py`.
 
     * uncomment the definition of `__RBRDEDXRIGI__` in `StYQAMaker.h` is you want to store run-by-run dEdx plot.
+
+    * if we would like to do bad run, pile-up, and / or mean DCA cut, you need to set the parameters properly in corresponding sub-modules.
 
 2. Using `./prepare.sh PATH FILELIST 1` to initialize and submit jobs.
 
@@ -21,6 +23,12 @@
 5. Run `BetterProfile.cxx` to make those profiles better formatted for official run-by-run QA package.
 
 ## Change log
+
+2026 Jan. 26 by yghuang 1.5:
+
+> Add more sub-modules.
+
+> Add more macros.
 
 2026 Jan. 25 by yghuang 1.4:
 
