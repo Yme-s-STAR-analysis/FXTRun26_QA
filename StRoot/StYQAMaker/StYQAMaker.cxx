@@ -164,10 +164,14 @@ Int_t StYQAMaker::Init() {
 
     std::cout << "[LOG] - From Init: " << "Initializing Histograms." << std::endl;
     
-    hNev = new TH1D("hNev", ";Events;Counts", 3, -0.5, 2.5);
-    hNev->GetXaxis()->SetBinLabel(1, "Full");
-    hNev->GetXaxis()->SetBinLabel(2, "Trg. Sel.");
-    hNev->GetXaxis()->SetBinLabel(3, "Vtx. Cut");
+    hNev = new TH1D("hNev", ";Events;Counts", 7, -0.5, 6.5);
+    hNev->GetXaxis()->SetBinLabel(1, "A) Full"); // 0
+    hNev->GetXaxis()->SetBinLabel(2, "B) Trg. Sel."); // 1
+    hNev->GetXaxis()->SetBinLabel(3, "C) Vtx. Cut"); // 2
+    hNev->GetXaxis()->SetBinLabel(4, "D) Run Sel."); // 3
+    hNev->GetXaxis()->SetBinLabel(5, "E1) PU Rej."); // 4 
+    hNev->GetXaxis()->SetBinLabel(6, "E2) <DCAxy/z> Cut"); // 5
+    hNev->GetXaxis()->SetBinLabel(7, "E1+E2)"); // 6
 
     h2VxVy = new TH2F(
         "hVxVy", "TPC V_{x} v.s. V_{y} w/o V_{r} cut;V_{x} (cm);V_{y} (cm);Counts", 
@@ -270,7 +274,7 @@ Int_t StYQAMaker::Init() {
     // pile-up and mean-DCA related 2D histograms
     h2FXTMult3DCA11FXTMult3DCA3 = new TH2F(
         "h2FXTMult3DCA11FXTMult3DCA3", 
-        "FXTMult3_DCA1 v.s. _DCA3;FXTMult3_DCA1;FXTMult_DCA3;Counts", 
+        "FXTMult3_DCA1 v.s. _DCA3;FXTMult3_DCA1;FXTMult3_DCA3;Counts", 
         160, -0.5, 159.5,
         250, -0.5, 249.5
     );
@@ -425,7 +429,7 @@ Int_t StYQAMaker::Init() {
         100, -0.5, 99.5
     );
     h2EtaNHitsRatio = new TH2F(
-        "h2EtaNHitsRatio", "#eta v.s. nHitsRatio#eta;nHitsRatio;;Counts",
+        "h2EtaNHitsRatio", "#eta v.s. nHitsRatio#eta;#eta;nHitsRatio;Counts",
         260, -2.6, 0.0,
         120, -0.1, 1.1
     );
@@ -529,12 +533,28 @@ Int_t StYQAMaker::Init() {
     }
     #endif
     
-    std::cout << "[LOG] - From Init: " << "Initializing the StFxtMult tool!" << std::endl;
+    std::cout << "[LOG] - From Init: " << "Initializing StFxtMult!" << std::endl;
     mtMult = new StFxtMult();
-    TpcShiftTool* mtShift = new TpcShiftTool();
-    mtShift->Init();
-    mtMult->ImportShiftTool(mtShift);
-    // mtMult->IgnoreShift();
+    // TpcShiftTool* mtShift = new TpcShiftTool();
+    // mtShift->Init();
+    // mtMult->ImportShiftTool(mtShift);
+    mtMult->IgnoreShift();
+    
+    std::cout << "[LOG] - From Init: " << "Initializing BadRunTool!" << std::endl;
+    mtRun = new BadRunTool();
+    mtRun->Init();
+    
+    std::cout << "[LOG] - From Init: " << "Initializing MeanDcaTool!" << std::endl;
+    mtDca = new MeanDcaTool();
+    mtDca->ReadParams();
+    
+    std::cout << "[LOG] - From Init: " << "Initializing VtxShiftTool!" << std::endl;
+    mtVtx = new VtxShiftTool();
+
+    std::cout << "[LOG] - From Init: " << "Initializing PileUpTool!" << std::endl;
+    mtPu = new PileUpTool();
+    mtPu->ReadParams();
+
     std::cout << "[LOG] - From Init: " << "This is the end of Init() function." << std::endl;
 
     return kStOK;
@@ -725,7 +745,7 @@ Int_t StYQAMaker::Make() {
     vy = vertex.Y();
     vz = vertex.Z();
     // shift the vertex
-    auto vr = sqrt(vx * vx + (vy + 2) * (vy + 2));
+    auto vr = mtVtx->GetShiftedVr(vx, vy);
     Float_t vpd_vz = mPicoEvent->vzVpd();
 
     h2VxVy->Fill(vx, vy);
@@ -738,11 +758,15 @@ Int_t StYQAMaker::Make() {
     pRunVsVz->Fill(mRunId, vz);
     pRunVsVr->Fill(mRunId, vr);
 
-    if (vr > 2 || vz < 199 || vz > 200.5) { return kStOK; }
+    // if (vr > 2 || vz < 199 || vz > 200.5) { return kStOK; }
+    if (!mtVtx->IsGoodVertex(vx, vy, vz)) { return kStOK; }
     h2VxVyVrCut->Fill(vx, vy);
     hTpcVzVrCut->Fill(vz);
 
     hNev->Fill(2);
+
+    if (mtRun->IsBadRun(runRawID)) { return kStOK; }
+    hNev->Fill(3);
 
     Float_t BBCx = mPicoEvent->BBCx();    
     Float_t ZDCx = mPicoEvent->ZDCx(); 
@@ -774,74 +798,66 @@ Int_t StYQAMaker::Make() {
         double sum = 0;
         for (double x : vpt) sum += x;
         ptM = sum / vpt.size();
+        pRunVsPt->Fill(mRunId, ptM);
     } else ptM = 0.0;
 
     if (!veta.empty()) {
         double sum = 0;
         for (double x : veta) sum += x;
         etaM = sum / veta.size();
+        pRunVsEta->Fill(mRunId, etaM);
     } else etaM = 0.0;
 
     if (!vphi.empty()) {
         double sum = 0;
         for (double x : vphi) sum += x;
         phiM = sum / vphi.size();
+        pRunVsPhi->Fill(mRunId, phiM);
     } else phiM = 0.0;
 
     if (!vsdca.empty()) {
         double sum = 0;
         for (double x : vsdca) sum += x;
         dcaM = sum / vsdca.size();
+        pRunVsDca->Fill(mRunId, dcaM);
     } else dcaM = 0.0;
 
     if (!vnhitsdedx.empty()) {
         double sum = 0;
         for (double x : vnhitsdedx) sum += x;
         nhitsDedxM = sum / vnhitsdedx.size();
+        pRunVsNHitsDedx->Fill(mRunId, nhitsDedxM);
     } else nhitsDedxM = 0.0;
 
     if (!vnhitsfit.empty()) {
         double sum = 0;
         for (double x : vnhitsfit) sum += x;
         nhitsFitM = sum / vnhitsfit.size();
+        pRunVsNHitsFit->Fill(mRunId, nhitsFitM);
     } else nhitsFitM = 0.0;
 
-    if (!vsdcaxy.empty()) {
-        double sum = 0;
-        for (double x : vsdcaxy) sum += x;
-        sDCAxyM = sum / vsdcaxy.size();
-        double ss = 0;
-        for (double x : vsdcaxy) ss += (x - sDCAxyM) * (x - sDCAxyM);
-        sDCAxyS = sqrt(ss / vsdcaxy.size());
+    // now we use mean DCA tool to get the mean and sigma of DCA xy/z
+    bool E1Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
+    if (!mtDca->Make(mPicoDst)) {
+        sDCAzM = 0;
+        sDCAzS = 0;
+        sDCAxyM = 0;
+        sDCAxyS = 0;
     } else {
-        sDCAxyM = 0.0;
-        sDCAxyS = 0.0;
+        sDCAzM = mtDca->GetMeanZ();
+        sDCAzS = mtDca->GetStdDevZ();
+        sDCAxyM = mtDca->GetMeanXY();
+        sDCAxyS = mtDca->GetStdDevXY();
+        pRunVssDcaXY->Fill(mRunId, sDCAxyM);
+        pRunVssDcaXYStd->Fill(mRunId, sDCAxyS);
+        pRunVsDcaZ->Fill(mRunId, sDCAzM);
+        pRunVsDcaZStd->Fill(mRunId, sDCAzS);
+        if(mtDca->IsBadMeanDcaXYEvent(mPicoDst) || mtDca->IsBadMeanDcaZEvent(mPicoDst)) { E1Flag = false; }
+        else { E1Flag = true; }
     }
-
-    if (!vsdcaz.empty()) {
-        double sum = 0;
-        for (double x : vsdcaz) sum += x;
-        sDCAzM = sum / vsdcaz.size();
-        double ss = 0;
-        for (double x : vsdcaz) ss += (x - sDCAzM) * (x - sDCAzM);
-        sDCAzS = sqrt(ss / vsdcaz.size());
-    } else {
-        sDCAzM = 0.0;
-        sDCAzS = 0.0;
-    }
-    // Then fill TProfiles for them
-    pRunVsPt->Fill(mRunId, ptM);
-    pRunVsEta->Fill(mRunId, etaM);
-    pRunVsPhi->Fill(mRunId, phiM);
-    pRunVsDca->Fill(mRunId, dcaM);
-    pRunVsNHitsFit->Fill(mRunId, nhitsFitM);
-    pRunVsNHitsDedx->Fill(mRunId, nhitsDedxM);
-    pRunVssDcaXY->Fill(mRunId, sDCAxyM);
-    pRunVssDcaXYStd->Fill(mRunId, sDCAxyS);
-    pRunVsDcaZ->Fill(mRunId, sDCAzM);
-    pRunVsDcaZStd->Fill(mRunId, sDCAzS);
 
     // Multiplicity-related
+    bool E2Flag = false; // for pile-up check
     if (mtMult->make(mPicoDst)) {
         hFXTMult_DCA1->Fill(mtMult->mFXTMult_DCA1);
         hFXTMult_DCA3->Fill(mtMult->mFXTMult_DCA3);
@@ -874,9 +890,21 @@ Int_t StYQAMaker::Make() {
         pRunVsTofMatch->Fill(mRunId, mtMult->mTofMatch);
         pRunVsBTofMatch->Fill(mRunId, mtMult->mBTofMatch);
         pRunVsEpdTnMip->Fill(mRunId, mtMult->mEpdTnMip);
+
+        if (mtPu->IsPileUp(
+            mtMult->mFXTMult3_DCA1, 
+            mtMult->mFXTMult3_DCA3,
+            mtMult->mEpdTnMip,
+            mtMult->mTofMult3
+        )) { E2Flag = false; }
+        else {E2Flag = true; }
     }
 
-    // Make EPD issue
+    if (E1Flag) { hNev->Fill(4); }
+    if (E2Flag) { hNev->Fill(5); }
+    if (E1Flag && E2Flag) { hNev->Fill(6); }
+
+    // EPD-related
     const int numberOfEpdHits = mPicoDst->numberOfEpdHits();
     mNEpdHitsEast = 0;
     mNEpdHitsWest = 0;

@@ -20,6 +20,10 @@
 #include "StPicoEvent/StPicoETofPidTraits.h"
 
 #include "StRoot/StFxtMult/StFxtMult.h"
+#include "StRoot/MeanDcaTool/MeanDcaTool.h"
+#include "StRoot/VtxShiftTool/VtxShiftTool.h"
+#include "StRoot/BadRunTool/BadRunTool.h"
+#include "StRoot/PileUpTool/PileUpTool.h"
 
 class TH1D;
 class TH1F;
@@ -59,7 +63,11 @@ class StYQAMaker : public StMaker {
         StPicoBTofPidTraits* mBTofPidTraits;
         StPicoETofPidTraits* mETofPidTraits;
 
+        BadRunTool* mtRun;
         StFxtMult* mtMult;
+        VtxShiftTool* mtVtx;
+        MeanDcaTool* mtDca;
+        PileUpTool* mtPu;
         
         Int_t mRunId;
         Int_t mRefMult;
