@@ -38,29 +38,33 @@ void MakeStatisticPlot() {
 
 	gStyle->SetOptStat(0);
 
+	hNev->GetXaxis()->SetTitle(" ");
+
+	vector<double> nEv;
+	vector<double> rEv;
 	auto nTot = hNev->GetBinContent(1);
-	auto nTrg = hNev->GetBinContent(2);
-	auto nVtx = hNev->GetBinContent(3);
+	for (int i=1; i<=hNev->GetNbinsX(); i++) {
+		nEv.push_back((double)hNev->GetBinContent(i));
+		rEv.push_back((double)hNev->GetBinContent(i) / 1.0 / nTot);
+	}
 
-	double rTrg = 1.0 * nTrg / nTot;
-	double rVtx = 1.0 * nVtx / nTot;
-
-	cout << "[LOG] Total number of events: " << nTot << endl;
-	cout << "[LOG] w/ good trigger cut: " << nTrg << " (" << rTrg * 100 << "%)" << endl;
-	cout << "[LOG] w/ good vertex cut: " << nVtx << " (" << rVtx * 100 << "%)" << endl;
+	// cout << "[LOG] Total number of events: " << nTot << endl;
+	// cout << "[LOG] w/ good trigger cut: " << nTrg << " (" << rTrg * 100 << "%)" << endl;
+	// cout << "[LOG] w/ good vertex cut: " << nVtx << " (" << rVtx * 100 << "%)" << endl;
     auto c = new TCanvas();
     c->cd();
 	gPad->SetLogy();
 	hNev->Draw("hist");
 	TLatex* lat = new TLatex();
-	lat->SetTextSize(0.06);
+	lat->SetTextSize(0.04);
 	lat->SetTextAlign(21);
-	lat->DrawLatex(0, nTot * 1.12, Form("%.2e", nTot*1.0));
-	lat->DrawLatex(1, nTrg * 1.12, Form("%.2e", nTrg*1.0));
-	lat->DrawLatex(2, nVtx * 1.12, Form("%.2e", nVtx*1.0));
+	for (int i=0; i<hNev->GetNbinsX(); i++) {
+		lat->DrawLatex(i, nEv[i] * 1.12, Form("%.2e", nEv[i]*1.0));
+	}
 	lat->SetTextAlign(23);
-	lat->DrawLatex(1, nTrg * 0.98, Form("%.1f %%", rTrg*100));
-	lat->DrawLatex(2, nVtx * 0.98, Form("%.1f %%", rVtx*100));
+	for (int i=0; i<hNev->GetNbinsX(); i++) {
+		lat->DrawLatex(i, nEv[i] * 0.98, Form("%.1f %%", rEv[i]*100));
+	}
 
     c->Print("stat.png");
 }
