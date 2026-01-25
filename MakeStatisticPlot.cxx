@@ -56,8 +56,11 @@ void MakeStatisticPlot() {
 	lat->SetTextSize(0.06);
 	lat->SetTextAlign(21);
 	lat->DrawLatex(0, nTot * 1.12, Form("%.2e", nTot*1.0));
-	lat->DrawLatex(1, nTrg * 1.12, Form("%.1f %%", rTrg*100));
-	lat->DrawLatex(2, nVtx * 1.12, Form("%.1f %%", rVtx*100));
+	lat->DrawLatex(1, nTrg * 1.12, Form("%.2e", nTrg*1.0));
+	lat->DrawLatex(2, nVtx * 1.12, Form("%.2e", nVtx*1.0));
+	lat->SetTextAlign(23);
+	lat->DrawLatex(1, nTrg * 0.98, Form("%.1f %%", rTrg*100));
+	lat->DrawLatex(2, nVtx * 0.98, Form("%.1f %%", rVtx*100));
 
     c->Print("stat.png");
 }
