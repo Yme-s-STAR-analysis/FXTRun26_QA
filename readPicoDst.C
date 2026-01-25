@@ -12,9 +12,7 @@ void readPicoDst(const TString inputFile = "file.list",
                  const TString outputFile = "qaOut") {
    	Int_t nEvents = 15000000;
 
-  	gROOT->LoadMacro(
-    	"$STAR/StRoot/StMuDSTMaker/COMMON/macros/loadSharedLibraries.C"
-	);
+  	gROOT->LoadMacro("$STAR/StRoot/StMuDSTMaker/COMMON/macros/loadSharedLibraries.C");
   	loadSharedLibraries();
 
 	gSystem->Load("StChain");
@@ -30,6 +28,10 @@ void readPicoDst(const TString inputFile = "file.list",
 	gSystem->Load("TpcShiftTool");
 	gSystem->Load("StFxtMult");
 	gSystem->Load("StYQAMaker");
+	gSystem->Load("MeanDcaTool");
+	gSystem->Load("VtxShiftTool");
+	gSystem->Load("BadRunTool");
+	gSystem->Load("PileUpTool");
 
 	chain = new StChain();
 
@@ -58,13 +60,13 @@ void readPicoDst(const TString inputFile = "file.list",
 	}
 
 	cout << "****************************************** " << endl;
-	cout << "Work done... now its time to close up shop!" << endl;
+	cout << "All Done!" << endl;
 	cout << "****************************************** " << endl;
 	
 	chain->Finish();
 	
 	cout << "****************************************** " << endl;
-	cout << "total number of events  " << nEvents << endl;
+	cout << "Total number of events  " << nEvents << endl;
 	cout << "****************************************** " << endl;
 
 	delete chain;
