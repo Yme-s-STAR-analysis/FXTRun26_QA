@@ -733,13 +733,6 @@ Int_t StYQAMaker::Make() {
     }
     hNev->Fill(1);
 
-    Int_t runRawID = mPicoEvent->runId();
-    if (DbConf::mRunIdxMap.count(runRawID) == 0) {
-        LOG_WARN << "[WARNING] - From Makes: " << runRawID << " is not a valid run from the run list." << endm;
-        return kStWarn;
-    }
-    mRunId = DbConf::mRunIdxMap.at(runRawID);
-
     TVector3 vertex = mPicoEvent->primaryVertex();
     vx = vertex.X();
     vy = vertex.Y();
@@ -765,6 +758,12 @@ Int_t StYQAMaker::Make() {
 
     hNev->Fill(2);
 
+    Int_t runRawID = mPicoEvent->runId();
+    if (DbConf::mRunIdxMap.count(runRawID) == 0) {
+        LOG_WARN << "[WARNING] - From Makes: " << runRawID << " is not a valid run from the run list." << endm;
+        return kStWarn;
+    }
+    mRunId = DbConf::mRunIdxMap.at(runRawID);
     if (mtRun->IsBadRun(runRawID)) { return kStOK; }
     hNev->Fill(3);
 
