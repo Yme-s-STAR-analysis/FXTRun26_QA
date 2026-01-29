@@ -111,20 +111,22 @@ bool MeanDcaTool::Make(StPicoDst *pico) {
     return true;
 }
 
-bool MeanDcaTool::IsBadMeanDcaZEvent(StPicoDst* pico) {
+bool MeanDcaTool::IsBadMeanDcaZEvent(StPicoDst* pico, int mult) {
     bool res = true;
-    if (!haveCache) { res = Make(pico); }
+    if (!haveCache) { 
+        res = Make(pico); 
+    }
     if (!res) { return true; }
-    int refMult = pico->event()->refMult();
-    if (funcUpperZ->Eval(refMult) < mDCAz || funcLowerZ->Eval(refMult) > mDCAz) { return true; }
+    if (funcUpperZ->Eval(mult) < mDCAz || funcLowerZ->Eval(mult) > mDCAz) { return true; }
     return false;
 }
 
-bool MeanDcaTool::IsBadMeanDcaXYEvent(StPicoDst* pico) {
+bool MeanDcaTool::IsBadMeanDcaXYEvent(StPicoDst* pico, int mult) {
     bool res = true;
-    if (!haveCache) { res = Make(pico); }
+    if (!haveCache) { 
+        res = Make(pico); 
+    }
     if (!res) { return true; }
-    int refMult = pico->event()->refMult();
-    if (funcUpperXY->Eval(refMult) < mDCAxy || funcLowerXY->Eval(refMult) > mDCAxy) { return true; }
+    if (funcUpperXY->Eval(mult) < mDCAxy || funcLowerXY->Eval(mult) > mDCAxy) { return true; }
     return false;
 }

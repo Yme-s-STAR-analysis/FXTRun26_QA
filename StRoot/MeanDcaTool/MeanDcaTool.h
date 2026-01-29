@@ -43,6 +43,8 @@ class MeanDcaTool {
         // when you just want to know an event is good or bad
         bool IsBadMeanDcaZEvent(StPicoDst* pico);
         bool IsBadMeanDcaXYEvent(StPicoDst* pico);
+        bool IsBadMeanDcaZEvent(StPicoDst* pico, int mult);
+        bool IsBadMeanDcaXYEvent(StPicoDst* pico, int mult);
 
         // getters
         double GetMeanZ() { return mDCAz; }
