@@ -1,6 +1,6 @@
 # FXT Run 2026 QA - Fastoffline
 
-`version 1.5`
+`version 1.6`
 
 `author: yghuang`
 
@@ -23,6 +23,12 @@
 5. Run `BetterProfile.cxx` to make those profiles better formatted for official run-by-run QA package.
 
 ## Change log
+
+2026 Jan. 26 by yghuang 1.6:
+
+> Fix some bugs.
+
+> Interface changes on mean dca tool.
 
 2026 Jan. 26 by yghuang 1.5:
 
