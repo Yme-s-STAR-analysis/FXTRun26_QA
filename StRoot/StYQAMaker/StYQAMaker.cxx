@@ -170,7 +170,7 @@ Int_t StYQAMaker::Init() {
     hNev->GetXaxis()->SetBinLabel(3, "C) Vtx. Cut"); // 2
     hNev->GetXaxis()->SetBinLabel(4, "D) Run Sel."); // 3
     hNev->GetXaxis()->SetBinLabel(5, "E1) PU Rej."); // 4 
-    hNev->GetXaxis()->SetBinLabel(6, "E2) <DCAxy/z> Cut"); // 5
+    hNev->GetXaxis()->SetBinLabel(6, "E2) <sDCAxy/z> Cut"); // 5
     hNev->GetXaxis()->SetBinLabel(7, "E1+E2)"); // 6
 
     h2VxVy = new TH2F(
@@ -761,11 +761,10 @@ Int_t StYQAMaker::Make() {
         return kStWarn;
     }
     mRunId = DbConf::mRunIdxMap.at(runRawID);
-    if (mtRun->IsBadRun(runRawID)) { return kStOK; }
-    hNev->Fill(3);
-    
     pRunVsVz->Fill(mRunId, vz);
     pRunVsVr->Fill(mRunId, vr);
+    if (mtRun->IsBadRun(runRawID)) { return kStOK; }
+    hNev->Fill(3);
 
     Float_t BBCx = mPicoEvent->BBCx();    
     Float_t ZDCx = mPicoEvent->ZDCx(); 
@@ -835,26 +834,6 @@ Int_t StYQAMaker::Make() {
         pRunVsNHitsFit->Fill(mRunId, nhitsFitM);
     } else nhitsFitM = 0.0;
 
-    // now we use mean DCA tool to get the mean and sigma of DCA xy/z
-    bool E2Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
-    if (!mtDca->Make(mPicoDst)) {
-        sDCAzM = 0;
-        sDCAzS = 0;
-        sDCAxyM = 0;
-        sDCAxyS = 0;
-    } else {
-        sDCAzM = mtDca->GetMeanZ();
-        sDCAzS = mtDca->GetStdDevZ();
-        sDCAxyM = mtDca->GetMeanXY();
-        sDCAxyS = mtDca->GetStdDevXY();
-        pRunVssDcaXY->Fill(mRunId, sDCAxyM);
-        pRunVssDcaXYStd->Fill(mRunId, sDCAxyS);
-        pRunVsDcaZ->Fill(mRunId, sDCAzM);
-        pRunVsDcaZStd->Fill(mRunId, sDCAzS);
-        if(mtDca->IsBadMeanDcaXYEvent(mPicoDst) || mtDca->IsBadMeanDcaZEvent(mPicoDst)) { E2Flag = false; }
-        else { E2Flag = true; }
-    }
-
     // Multiplicity-related
     bool E1Flag = false; // for pile-up check
     if (mtMult->make(mPicoDst)) {
@@ -874,10 +853,6 @@ Int_t StYQAMaker::Make() {
         h2FXTMult3DCA1TofMult3->Fill(mtMult->mFXTMult3_DCA1, mtMult->mTofMult3);
         h2FXTMult3DCA1EpdTnMip->Fill(mtMult->mFXTMult3_DCA1, mtMult->mEpdTnMip);
 
-        // mean dca 2D heatmap
-        h2FXTMultDCA3sDCAxy->Fill(mtMult->mFXTMult_DCA3, sDCAxyM);
-        h2FXTMultDCA3sDCAz->Fill(mtMult->mFXTMult_DCA3, sDCAzM);
-
         // profiles
         pRunVsFXTMult_DCA1->Fill(mRunId, mtMult->mFXTMult_DCA1);
         pRunVsFXTMult_DCA3->Fill(mRunId, mtMult->mFXTMult_DCA3);
@@ -896,7 +871,37 @@ Int_t StYQAMaker::Make() {
             mtMult->mEpdTnMip,
             mtMult->mTofMult3
         )) { E1Flag = false; }
-        else {E1Flag = true; }
+        else { E1Flag = true; }
+    }
+
+    // now we use mean DCA tool to get the mean and sigma of DCA xy/z
+    bool E2Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
+    bool E2aFlag = false;
+    bool E2bFlag = false;
+    if (!mtDca->Make(mPicoDst)) {
+        sDCAzM = 0;
+        sDCAzS = 0;
+        sDCAxyM = 0;
+        sDCAxyS = 0;
+    } else {
+        sDCAzM = mtDca->GetMeanZ();
+        sDCAzS = mtDca->GetStdDevZ();
+        sDCAxyM = mtDca->GetMeanXY();
+        sDCAxyS = mtDca->GetStdDevXY();
+        pRunVssDcaXY->Fill(mRunId, sDCAxyM);
+        pRunVssDcaXYStd->Fill(mRunId, sDCAxyS);
+        pRunVsDcaZ->Fill(mRunId, sDCAzM);
+        pRunVsDcaZStd->Fill(mRunId, sDCAzS);
+
+        // mean dca 2D heatmap
+        h2FXTMultDCA3sDCAxy->Fill(mtMult->mFXTMult_DCA3, sDCAxyM);
+        h2FXTMultDCA3sDCAz->Fill(mtMult->mFXTMult_DCA3, sDCAzM);
+
+        if (mtDca->IsBadMeanDcaXYEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2aFlag = false; }
+        else { E2aFlag = true; }
+        if (mtDca->IsBadMeanDcaZEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2bFlag = false; }
+        else { E2bFlag = true; }
+        E2Flag = (E2aFlag && E2bFlag);
     }
 
     if (E1Flag) { hNev->Fill(4); }
