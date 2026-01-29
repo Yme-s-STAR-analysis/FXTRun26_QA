@@ -748,9 +748,6 @@ Int_t StYQAMaker::Make() {
     hNVpdHitsEast->Fill(mPicoEvent->nVpdHitsEast());
     hNVpdHitsWest->Fill(mPicoEvent->nVpdHitsWest());
 
-    pRunVsVz->Fill(mRunId, vz);
-    pRunVsVr->Fill(mRunId, vr);
-
     // if (vr > 2 || vz < 199 || vz > 200.5) { return kStOK; }
     if (!mtVtx->IsGoodVertex(vx, vy, vz)) { return kStOK; }
     h2VxVyVrCut->Fill(vx, vy);
@@ -766,6 +763,9 @@ Int_t StYQAMaker::Make() {
     mRunId = DbConf::mRunIdxMap.at(runRawID);
     if (mtRun->IsBadRun(runRawID)) { return kStOK; }
     hNev->Fill(3);
+    
+    pRunVsVz->Fill(mRunId, vz);
+    pRunVsVr->Fill(mRunId, vr);
 
     Float_t BBCx = mPicoEvent->BBCx();    
     Float_t ZDCx = mPicoEvent->ZDCx(); 
