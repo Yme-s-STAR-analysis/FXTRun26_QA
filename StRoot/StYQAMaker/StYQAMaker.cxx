@@ -837,7 +837,7 @@ Int_t StYQAMaker::Make() {
     } else nhitsFitM = 0.0;
 
     // now we use mean DCA tool to get the mean and sigma of DCA xy/z
-    bool E1Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
+    bool E2Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
     if (!mtDca->Make(mPicoDst)) {
         sDCAzM = 0;
         sDCAzS = 0;
@@ -852,12 +852,12 @@ Int_t StYQAMaker::Make() {
         pRunVssDcaXYStd->Fill(mRunId, sDCAxyS);
         pRunVsDcaZ->Fill(mRunId, sDCAzM);
         pRunVsDcaZStd->Fill(mRunId, sDCAzS);
-        if(mtDca->IsBadMeanDcaXYEvent(mPicoDst) || mtDca->IsBadMeanDcaZEvent(mPicoDst)) { E1Flag = false; }
-        else { E1Flag = true; }
+        if(mtDca->IsBadMeanDcaXYEvent(mPicoDst) || mtDca->IsBadMeanDcaZEvent(mPicoDst)) { E2Flag = false; }
+        else { E2Flag = true; }
     }
 
     // Multiplicity-related
-    bool E2Flag = false; // for pile-up check
+    bool E1Flag = false; // for pile-up check
     if (mtMult->make(mPicoDst)) {
         hFXTMult_DCA1->Fill(mtMult->mFXTMult_DCA1);
         hFXTMult_DCA3->Fill(mtMult->mFXTMult_DCA3);
@@ -896,8 +896,8 @@ Int_t StYQAMaker::Make() {
             mtMult->mFXTMult3_DCA3,
             mtMult->mEpdTnMip,
             mtMult->mTofMult3
-        )) { E2Flag = false; }
-        else {E2Flag = true; }
+        )) { E1Flag = false; }
+        else {E1Flag = true; }
     }
 
     if (E1Flag) { hNev->Fill(4); }
