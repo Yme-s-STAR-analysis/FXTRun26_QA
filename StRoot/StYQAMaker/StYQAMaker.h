@@ -190,6 +190,7 @@ class StYQAMaker : public StMaker {
         TProfile* pRunVsTofMult;
         TProfile* pRunVsTofMult3;
         TProfile* pRunVsEpdTnMip;
+        TProfile* pRunVsZdcX;
         TProfile* pRunVsTofMatch; // this one includes both btof and etof
         TProfile* pRunVsBTofMatch; // this one comes from bTof
         

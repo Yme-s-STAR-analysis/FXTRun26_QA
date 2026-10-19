@@ -124,6 +124,7 @@ StYQAMaker::~StYQAMaker() {
     delete pRunVsTofMult; pRunVsTofMult = nullptr;
     delete pRunVsTofMult3; pRunVsTofMult3 = nullptr;
     delete pRunVsEpdTnMip; pRunVsEpdTnMip = nullptr;
+    delete pRunVsZdcX; pRunVsZdcX = nullptr;
     delete pRunVsTofMatch; pRunVsTofMatch = nullptr;
     delete pRunVsBTofMatch; pRunVsBTofMatch = nullptr;
     delete pRunVsDca; pRunVsDca = nullptr;
@@ -505,6 +506,7 @@ Int_t StYQAMaker::Init() {
     pRunVsTofMult = new TProfile("pRunVsTofMult", ";Run ID;<TofMult>", nRuns, -0.5, nRuns-0.5);
     pRunVsTofMult3 = new TProfile("pRunVsTofMult3", ";Run ID;<TofMult3>", nRuns, -0.5, nRuns-0.5);
     pRunVsEpdTnMip = new TProfile("pRunVsEpdTnMip", ";Run ID;<TnMip>", nRuns, -0.5, nRuns-0.5);
+    pRunVsZdcX = new TProfile("pRunVsZdcX", ";Run ID;<ZDCx>", nRuns, -0.5, nRuns-0.5);
     pRunVsTofMatch = new TProfile("pRunVsTofMatch", ";Run ID;<TofMatch>", nRuns, -0.5, nRuns-0.5);
     pRunVsBTofMatch = new TProfile("pRunVsBTofMatch", ";Run ID;<bTofMatch>", nRuns, -0.5, nRuns-0.5);
 
@@ -650,6 +652,7 @@ Int_t StYQAMaker::Finish() {
     // Event-wise
     pRunVsVz->Write();
     pRunVsVr->Write();
+    pRunVsZdcX->Write();
     pRunVsRefMult->Write();
     pRunVsRefMult3->Write();
     pRunVsNEpdHitsEast->Write();
@@ -771,6 +774,7 @@ Int_t StYQAMaker::Make() {
 
     hBbcX->Fill(BBCx);
     hZdcX->Fill(ZDCx);
+    pRunVsZdcX->Fill(mRunId, ZDCx);
     hRefMult->Fill(mPicoEvent->refMult());
     hRefMult3->Fill(mPicoEvent->refMult3());
     pRunVsRefMult->Fill(mRunId, mPicoEvent->refMult());
@@ -835,7 +839,8 @@ Int_t StYQAMaker::Make() {
     } else nhitsFitM = 0.0;
 
     // Multiplicity-related
-    bool E1Flag = false; // for pile-up check
+    bool E1Flag = true; // pile-up cut DISABLED for the first QA pass
+                        // (parameters are fitted from this run QA, then applied later)
     if (mtMult->make(mPicoDst)) {
         hFXTMult_DCA1->Fill(mtMult->mFXTMult_DCA1);
         hFXTMult_DCA3->Fill(mtMult->mFXTMult_DCA3);
@@ -865,19 +870,20 @@ Int_t StYQAMaker::Make() {
         pRunVsBTofMatch->Fill(mRunId, mtMult->mBTofMatch);
         pRunVsEpdTnMip->Fill(mRunId, mtMult->mEpdTnMip);
 
-        if (mtPu->IsPileUp(
-            mtMult->mFXTMult3_DCA1, 
-            mtMult->mFXTMult3_DCA3,
-            mtMult->mEpdTnMip,
-            mtMult->mTofMult3
-        )) { E1Flag = false; }
-        else { E1Flag = true; }
+        // pile-up cut DISABLED for the first QA pass:
+        // if (mtPu->IsPileUp(
+        //     mtMult->mFXTMult3_DCA1,
+        //     mtMult->mFXTMult3_DCA3,
+        //     mtMult->mEpdTnMip,
+        //     mtMult->mTofMult3
+        // )) { E1Flag = false; }
+        // else { E1Flag = true; }
     }
 
     // now we use mean DCA tool to get the mean and sigma of DCA xy/z
-    bool E2Flag = false; // false means: IS a bad mean DCA event -> we will fill the entry when true
-    bool E2aFlag = false;
-    bool E2bFlag = false;
+    // mean-DCA cut DISABLED for the first QA pass (parameterization comes
+    // after the run QA); the mean/std are still filled into the profiles
+    bool E2Flag = true;
     if (!mtDca->Make(mPicoDst)) {
         sDCAzM = 0;
         sDCAzS = 0;
@@ -897,11 +903,9 @@ Int_t StYQAMaker::Make() {
         h2FXTMultDCA3sDCAxy->Fill(mtMult->mFXTMult_DCA3, sDCAxyM);
         h2FXTMultDCA3sDCAz->Fill(mtMult->mFXTMult_DCA3, sDCAzM);
 
-        if (mtDca->IsBadMeanDcaXYEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2aFlag = false; }
-        else { E2aFlag = true; }
-        if (mtDca->IsBadMeanDcaZEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2bFlag = false; }
-        else { E2bFlag = true; }
-        E2Flag = (E2aFlag && E2bFlag);
+        // mean-DCA cut DISABLED for the first QA pass:
+        // if (mtDca->IsBadMeanDcaXYEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2Flag = false; }
+        // if (mtDca->IsBadMeanDcaZEvent(mPicoDst, mtMult->mFXTMult_DCA3)) { E2Flag = false; }
     }
 
     if (E1Flag) { hNev->Fill(4); }
